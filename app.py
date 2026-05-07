@@ -9,6 +9,7 @@ import streamlit as st
 from parsers.job_url_parser import JobURLParser
 from parsers.resume_parser import ResumeParser
 from agents.resume_tailor import ResumeTailor
+from agents.profile_matcher import ProfileMatcher
 from utils.profile_store import load_profile, save_profile, clear_profile, calculate_completeness, restore_default_profile
 
 TRACKER_FILE = Path("data/applications_tracker.csv")
@@ -19,6 +20,11 @@ TRACKER_FIELDS = [
     "job_url",
     "job_description",
     "detected_keywords",
+    "match_score",
+    "matching_skills",
+    "missing_skills",
+    "relevant_projects",
+    "strongest_fits",
     "application_status",
     "saved_at",
 ]
@@ -28,6 +34,7 @@ st.set_page_config(page_title="AI Job Application Copilot", page_icon="💼")
 if "resume_text" not in st.session_state:
     st.session_state.resume_text = ""
     st.session_state.resume_filename = ""
+    st.session_state.resume_docx_bytes = None
 if "job_details" not in st.session_state:
     st.session_state.job_details = {}
 if "tracker_rows" not in st.session_state:
@@ -115,6 +122,16 @@ def parse_job_details(scrape_result: dict, fallback_description: str = "") -> di
     if word_count >= 80:
         confident_fields.append("description")
 
+    # Profile matching
+    profile_match = {}
+    if description_text:
+        matcher = ProfileMatcher()
+        profile_match = matcher.match_job({
+            "job_description": description_text,
+            "role_title": title,
+            "company": company
+        })
+
     return {
         "company": company,
         "role_title": title,
@@ -129,10 +146,12 @@ def parse_job_details(scrape_result: dict, fallback_description: str = "") -> di
         "analysis": analysis,
         "word_count": word_count,
         "confident_fields": confident_fields,
+        "profile_match": profile_match,
     }
 
 
 def format_tracker_row(details: dict) -> dict:
+    profile_match = details.get("profile_match", {})
     return {
         "company": details.get("company", ""),
         "role_title": details.get("role_title", ""),
@@ -140,6 +159,11 @@ def format_tracker_row(details: dict) -> dict:
         "job_url": details.get("job_url", ""),
         "job_description": details.get("job_description", ""),
         "detected_keywords": details.get("detected_keywords", ""),
+        "match_score": profile_match.get("match_score", 0),
+        "matching_skills": ", ".join(profile_match.get("matching_skills", [])),
+        "missing_skills": ", ".join(profile_match.get("missing_skills", [])),
+        "relevant_projects": "; ".join(profile_match.get("relevant_projects", [])),
+        "strongest_fits": ", ".join(profile_match.get("strongest_fit_areas", [])),
         "application_status": details.get("application_status", "Saved"),
         "saved_at": datetime.utcnow().isoformat(),
     }
@@ -154,13 +178,15 @@ st.markdown(
 tab_job_app, tab_master_profile = st.tabs(["Job Application", "Master Profile"])
 
 with st.sidebar:
-    with st.expander("Optional: Upload resume for later tailoring"):
-        resume_file = st.file_uploader("Upload your resume", type=["pdf", "docx", "txt"])
+    with st.expander("Upload your resume for later tailoring"):
+        resume_file = st.file_uploader("Upload your resume (DOCX only)", type=["docx"])
         if resume_file is not None:
-            if resume_file.name != st.session_state.resume_filename:
+            resume_bytes = resume_file.read()
+            if resume_file.name != st.session_state.resume_filename or resume_bytes != st.session_state.resume_docx_bytes:
                 parser = ResumeParser()
-                st.session_state.resume_text = parser.parse(resume_file.read(), resume_file.name)
+                st.session_state.resume_text = parser.parse(resume_bytes, resume_file.name)
                 st.session_state.resume_filename = resume_file.name
+                st.session_state.resume_docx_bytes = resume_bytes
 
         if st.session_state.resume_text:
             st.markdown("**Parsed resume preview**")
@@ -236,6 +262,100 @@ with tab_job_app:
         st.markdown("**Job description preview**")
         st.write(details.get("job_description", "")[:1200] + ("..." if len(details.get("job_description", "")) > 1200 else ""))
 
+        # Profile Match Analysis
+        profile_match = details.get("profile_match", {})
+        if profile_match:
+            st.subheader("Profile Match Analysis")
+
+            # Match Score
+            match_score = profile_match.get("match_score", 0)
+            st.markdown(f"**Overall Match Score: {match_score}%**")
+            if match_score >= 80:
+                st.success("Excellent match! Your profile strongly aligns with this role.")
+            elif match_score >= 60:
+                st.info("Good match with some areas to emphasize.")
+            elif match_score >= 40:
+                st.warning("Moderate match - consider highlighting transferable skills.")
+            else:
+                st.error("Limited match - focus on relevant experience and skills.")
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                # Matching Skills
+                matching_skills = profile_match.get("matching_skills", [])
+                if matching_skills:
+                    st.markdown("**✅ Matching Skills**")
+                    for skill in matching_skills[:6]:
+                        st.markdown(f"• {skill.title()}")
+                    if len(matching_skills) > 6:
+                        st.markdown(f"*...and {len(matching_skills) - 6} more*")
+                else:
+                    st.markdown("**✅ Matching Skills**")
+                    st.write("No direct skill matches detected.")
+
+                # Strongest Fit Areas
+                strongest_fits = profile_match.get("strongest_fit_areas", [])
+                if strongest_fits:
+                    st.markdown("**💪 Strongest Fit Areas**")
+                    for fit in strongest_fits:
+                        st.markdown(f"• {fit}")
+
+            with col2:
+                # Missing Skills
+                missing_skills = profile_match.get("missing_skills", [])
+                if missing_skills:
+                    st.markdown("**❌ Skills to Address**")
+                    for skill in missing_skills[:4]:
+                        st.markdown(f"• {skill.title()}")
+                    if len(missing_skills) > 4:
+                        st.markdown(f"*...and {len(missing_skills) - 4} more*")
+                else:
+                    st.markdown("**❌ Skills to Address**")
+                    st.write("No major skill gaps detected.")
+
+                # Role Relevance
+                role_relevance = profile_match.get("role_relevance", {})
+                if role_relevance.get("relevant"):
+                    st.markdown("**🎯 Role Relevance**")
+                    matched_roles = role_relevance.get("matched_roles", [])
+                    if matched_roles:
+                        st.markdown(f"Matches your target: {', '.join(matched_roles)}")
+                    else:
+                        st.markdown("Aligns with your career goals")
+                else:
+                    st.markdown("**🎯 Role Relevance**")
+                    st.write("Consider if this aligns with your target roles")
+
+            # Relevant Projects
+            relevant_projects = profile_match.get("relevant_projects", [])
+            if relevant_projects:
+                st.markdown("**🚀 Relevant Projects to Highlight**")
+                for project in relevant_projects:
+                    st.markdown(f"• {project}")
+
+            # Relevant Resume Bullets
+            relevant_bullets = profile_match.get("relevant_bullets", [])
+            if relevant_bullets:
+                st.markdown("**📋 Key Resume Bullets to Use**")
+                for bullet in relevant_bullets[:3]:
+                    st.markdown(f"• {bullet}")
+
+            # Recommendations
+            recommendations = profile_match.get("recommendations", [])
+            if recommendations:
+                st.markdown("**💡 Application Recommendations**")
+                for rec in recommendations:
+                    st.markdown(f"• {rec}")
+
+            # Recruiter Keywords
+            recruiter_keywords = profile_match.get("recruiter_keywords", [])
+            if recruiter_keywords:
+                st.markdown("**🔍 Likely Recruiter Keywords**")
+                st.write(", ".join(recruiter_keywords))
+
+            st.markdown("---")
+
         st.subheader("Application Prep")
         analysis = details.get("analysis", {})
         st.markdown("**Key job requirements**")
@@ -261,6 +381,80 @@ with tab_job_app:
         else:
             st.write("No review fields identified yet.")
 
+        st.markdown("---")
+        st.subheader("Tailored Resume Generation")
+        if not st.session_state.resume_docx_bytes:
+            st.info("Upload your resume as a DOCX file in the sidebar to enable tailored resume generation.")
+        else:
+            if st.button("Generate Tailored Resume", key="generate_tailored_resume_btn"):
+                tailored_result = tailor.generate_tailored_resume(
+                    resume_docx_bytes=st.session_state.resume_docx_bytes,
+                    resume_text=st.session_state.resume_text,
+                    job_description=details.get("job_description", ""),
+                    profile=st.session_state.profile,
+                    company=details.get("company", "Company"),
+                    role_title=details.get("role_title", "Role"),
+                    original_filename=st.session_state.resume_filename,
+                )
+                st.session_state.tailored_resume = tailored_result
+                st.success("Tailored resume generated and saved to exports/tailored_resumes.")
+
+        if st.session_state.get("tailored_resume"):
+            tr = st.session_state.tailored_resume
+            st.subheader("Tailoring Summary")
+            st.markdown(f"**Resume Match Score:** {tr.get('match_score', 0)}%")
+
+            matched_keywords = tr.get("matched_keywords", [])
+            if matched_keywords:
+                st.markdown("**Matched Keywords**")
+                st.write(", ".join(matched_keywords))
+
+            emphasized_projects = tr.get("emphasized_projects", [])
+            if emphasized_projects:
+                st.markdown("**Emphasized Projects**")
+                for project in emphasized_projects:
+                    st.markdown(f"- {project}")
+
+            recommended_edits = tr.get("recommended_edits", [])
+            if recommended_edits:
+                st.markdown("**Recommended Edits**")
+                for edit in recommended_edits:
+                    st.markdown(f"- {edit}")
+
+            missing_qualifications = tr.get("missing_qualifications", [])
+            if missing_qualifications:
+                st.markdown("**Missing Qualifications**")
+                for missing in missing_qualifications[:8]:
+                    st.markdown(f"- {missing}")
+                if len(missing_qualifications) > 8:
+                    st.markdown(f"*...and {len(missing_qualifications) - 8} more*")
+
+            st.markdown("---")
+            st.markdown("**Download tailored resume**")
+            download_col1, download_col2 = st.columns(2)
+
+            if tr.get("docx_bytes"):
+                download_col1.download_button(
+                    label="Download DOCX",
+                    data=tr["docx_bytes"],
+                    file_name=tr["docx_filename"],
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                )
+            else:
+                download_col1.warning("DOCX export is unavailable. Ensure python-docx is installed and the uploaded file is valid.")
+
+            if tr.get("pdf_bytes"):
+                download_col2.download_button(
+                    label="Download PDF",
+                    data=tr["pdf_bytes"],
+                    file_name=tr["pdf_filename"],
+                    mime="application/pdf",
+                )
+            else:
+                download_col2.warning("PDF export is unavailable. Install docx2pdf and ensure it is supported on your system.")
+
+            st.markdown(f"**Saved path:** `{tr.get('directory', '')}`")
+
     st.subheader("Application Tracker")
     if st.session_state.tracker_rows:
         st.dataframe(st.session_state.tracker_rows)
@@ -270,8 +464,11 @@ with tab_job_app:
 with tab_master_profile:
     st.header("Master Profile")
     st.markdown(
-        "Your profile is pre-populated with comprehensive placeholder values. Edit the fields below and click **Save Profile** to store your information. Use **Restore Default** to reload the original template."
+        "Edit your profile information below and click **Save Profile** to persist changes. Your profile is stored in `data/profile.json`."
     )
+    
+    # Debug info showing profile source
+    st.caption("✓ Profile loaded from: `data/profile.json`")
 
     profile = st.session_state.profile
 
@@ -292,54 +489,74 @@ with tab_master_profile:
             "LinkedIn URL", value=profile.get("contact_info", {}).get("linkedin", "")
         )
 
-    col1, col2 = st.columns(2)
-    with col1:
-        profile["contact_info"]["portfolio"] = st.text_input(
-            "Portfolio URL", value=profile.get("contact_info", {}).get("portfolio", "")
-        )
-    with col2:
-        profile["contact_info"]["github"] = st.text_input(
-            "GitHub URL", value=profile.get("contact_info", {}).get("github", "")
-        )
+    st.subheader("Links / Portfolio")
+    profile["links_portfolio"]["github_url"] = st.text_input(
+        "GitHub URL",
+        value=profile.get("links_portfolio", {}).get("github_url", ""),
+    )
+    profile["links_portfolio"]["multi_asset_portfolio_url"] = st.text_input(
+        "Multi-Asset Portfolio Analytics Website URL",
+        value=profile.get("links_portfolio", {}).get("multi_asset_portfolio_url", ""),
+    )
 
     st.subheader("Education")
-    col1, col2 = st.columns(2)
-    with col1:
-        profile["education"]["degree"] = st.text_input(
-            "Degree", value=profile.get("education", {}).get("degree", "")
+    st.markdown("**Bachelor’s Degree**")
+    bat_col1, bat_col2 = st.columns(2)
+    with bat_col1:
+        profile["education"]["bachelors"]["degree"] = st.text_input(
+            "Bachelor’s Degree",
+            value=profile.get("education", {}).get("bachelors", {}).get("degree", ""),
         )
-        profile["education"]["field_of_study"] = st.text_input(
-            "Field of Study", value=profile.get("education", {}).get("field_of_study", "")
+        profile["education"]["bachelors"]["field_of_study"] = st.text_input(
+            "Bachelor’s Field of Study",
+            value=profile.get("education", {}).get("bachelors", {}).get("field_of_study", ""),
         )
-    with col2:
-        profile["education"]["university"] = st.text_input(
-            "University", value=profile.get("education", {}).get("university", "")
+    with bat_col2:
+        profile["education"]["bachelors"]["university"] = st.text_input(
+            "Bachelor’s University",
+            value=profile.get("education", {}).get("bachelors", {}).get("university", ""),
         )
-        profile["education"]["graduation_year"] = st.text_input(
-            "Graduation Year", value=profile.get("education", {}).get("graduation_year", "")
+        profile["education"]["bachelors"]["graduation_year"] = st.text_input(
+            "Bachelor’s Graduation Year",
+            value=profile.get("education", {}).get("bachelors", {}).get("graduation_year", ""),
         )
 
-    profile["education"]["certifications"] = st.text_area(
-        "Certifications (comma-separated)",
-        value=profile.get("education", {}).get("certifications", ""),
-        height=80,
-    )
+    st.markdown("**Master’s Degree**")
+    mag_col1, mag_col2 = st.columns(2)
+    with mag_col1:
+        profile["education"]["masters"]["degree"] = st.text_input(
+            "Master’s Degree",
+            value=profile.get("education", {}).get("masters", {}).get("degree", ""),
+        )
+        profile["education"]["masters"]["field_of_study"] = st.text_input(
+            "Master’s Field of Study",
+            value=profile.get("education", {}).get("masters", {}).get("field_of_study", ""),
+        )
+    with mag_col2:
+        profile["education"]["masters"]["university"] = st.text_input(
+            "Master’s University",
+            value=profile.get("education", {}).get("masters", {}).get("university", ""),
+        )
+        profile["education"]["masters"]["graduation_year"] = st.text_input(
+            "Master’s Graduation Year",
+            value=profile.get("education", {}).get("masters", {}).get("graduation_year", ""),
+        )
 
     st.subheader("Career Preferences")
     col1, col2 = st.columns(2)
     with col1:
         profile["target_roles"] = st.text_input(
-            "Target Roles (comma-separated, e.g., 'Data Analyst, Financial Analyst')",
+            "Target Roles (comma-separated, e.g., 'Data Analyst, Business Analyst')",
             value=profile.get("target_roles", ""),
         )
     with col2:
         profile["target_locations"] = st.text_input(
-            "Target Locations (comma-separated, e.g., 'New York, San Francisco, Remote')",
+            "Target Locations (comma-separated, e.g., 'Los Angeles, Newport Beach')",
             value=profile.get("target_locations", ""),
         )
 
     profile["work_authorization"] = st.text_input(
-        "Work Authorization Status (e.g., 'US Citizen', 'Green Card', 'H-1B Visa Sponsorship Available')",
+        "Work Authorization Status (e.g., 'US Citizen')",
         value=profile.get("work_authorization", ""),
     )
     profile["salary_expectations"] = st.text_input(
@@ -361,7 +578,7 @@ with tab_master_profile:
     )
 
     profile["tools_platforms"] = st.text_area(
-        "Tools & Platforms (comma-separated, e.g., 'Salesforce, Workday, SAP, Jira')",
+        "Tools & Platforms (comma-separated, e.g., 'Excel, SQL, Tableau, Python')",
         value=profile.get("tools_platforms", ""),
         height=80,
     )

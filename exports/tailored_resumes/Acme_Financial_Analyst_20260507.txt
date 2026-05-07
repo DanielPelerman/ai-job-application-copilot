@@ -1,0 +1,22 @@
+Tailored resume for Financial Analyst at Acme
+
+Relevant keywords matched:
+• modeling
+• python
+• r
+• sql
+• tableau
+
+Key experience and projects to emphasize:
+• NVIDIA Developer Analytics Project: Team leader for a developer ecosystem analytics project analyzing millions of developer activity records. Built funnel logic to study engagement, exploration, and adoption behavior. Identified community advocates and strong technical advocates using activity thresholds across API usage, downloads, training, and forum engagement. Presented insights to NVIDIA stakeholders and translated technical findings into business recommendations.
+• Oracle Churn Analytics Project: Built an ARR-based churn and downsell classification framework using enterprise SaaS customer data. Analyzed customer health signals, product risk, engagement risk, and ARR exposure. Created executive-facing Tableau visuals to identify mismatch risk pockets and presented findings to Oracle leadership and stakeholders.
+• Middle East Asset Management Project: Team leader for a finance presentation analyzing how Middle East conflict risk can affect oil prices, energy equities, inflation expectations, interest rates, and broader equity markets. Used indexed market comparisons, XLE vs. SPY sector rotation analysis, oil market data, and macro storytelling to explain financial market transmission effects.
+• Wealth Tech / Robo Advisory Project: Team leader for a wealth technology presentation focused on Modern Portfolio Theory, efficient frontier analysis, risk-return tradeoffs, Sharpe ratio optimization, and how robo-advisors apply portfolio analytics. Served as point person for presentation delivery and Q&A.
+• Multi-Asset Portfolio Analytics Website: Built a web-based portfolio analytics tool focused on multi-asset portfolio analysis and investment insights. Demonstrates ability to combine finance knowledge, analytics, and user-facing product development.
+
+Preserved core experience from your original resume while emphasizing the most relevant finance and analytics results.
+
+Daniel Pelerman
+Summary of finance and analytics experience.
+• Built dashboards in Tableau and Python.
+• Led team project analyzing portfolios.

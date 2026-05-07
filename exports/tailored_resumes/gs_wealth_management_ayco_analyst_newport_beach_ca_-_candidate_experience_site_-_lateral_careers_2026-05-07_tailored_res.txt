@@ -1,0 +1,188 @@
+Tailored resume for Wealth Management Ayco | Analyst | Newport Beach, CA - Candidate Experience Site - Lateral Careers at GS
+
+Relevant keywords matched:
+• excel
+• investment
+• lead
+• r
+• reporting
+• stakeholder
+• team
+• valuation
+
+Key experience and projects to emphasize:
+• NVIDIA Developer Analytics Project: Team leader for a developer ecosystem analytics project analyzing millions of developer activity records. Built funnel logic to study engagement, exploration, and adoption behavior. Identified community advocates and strong technical advocates using activity thresholds across API usage, downloads, training, and forum engagement. Presented insights to NVIDIA stakeholders and translated technical findings into business recommendations.
+• Oracle Churn Analytics Project: Built an ARR-based churn and downsell classification framework using enterprise SaaS customer data. Analyzed customer health signals, product risk, engagement risk, and ARR exposure. Created executive-facing Tableau visuals to identify mismatch risk pockets and presented findings to Oracle leadership and stakeholders.
+• Middle East Asset Management Project: Team leader for a finance presentation analyzing how Middle East conflict risk can affect oil prices, energy equities, inflation expectations, interest rates, and broader equity markets. Used indexed market comparisons, XLE vs. SPY sector rotation analysis, oil market data, and macro storytelling to explain financial market transmission effects.
+• Wealth Tech / Robo Advisory Project: Team leader for a wealth technology presentation focused on Modern Portfolio Theory, efficient frontier analysis, risk-return tradeoffs, Sharpe ratio optimization, and how robo-advisors apply portfolio analytics. Served as point person for presentation delivery and Q&A.
+• Multi-Asset Portfolio Analytics Website: Built a web-based portfolio analytics tool focused on multi-asset portfolio analysis and investment insights. Demonstrates ability to combine finance knowledge, analytics, and user-facing product development.
+
+Preserved core experience from your original resume while emphasizing the most relevant finance and analytics results.
+
+Daniel  Pelerman  Los  Angeles,  CA  91301  (818)  625-2797  •  danielpelerman@gmail.com   EDUCATION  California  Polytechnic  State  University  -  Orfalea  College  of  Business   San  Luis  Obispo,  CA  Master  of  Science  in  Business  Analytics  Expected  Graduation:  June  2026  ●  Graduate-level  coursework  in  data  science,  predictive  analytics,  machine  learning,  and  business  intelligence   Bachelor  of  Science  in  Business  Administration,  Finance               Graduated  with  Honors,  June  2025  ●  Relevant  Coursework:  Global  Financial  Marketplaces  and  Institutions,  Financial  &  Managerial  Accounting,  
+Principles
+ 
+of
+ 
+Marketing,
+ 
+Business
+ 
+Statistics,
+ 
+Corporate
+ 
+Finance,
+ 
+Computer
+ 
+Applications
+ 
+in
+ 
+Finance,
+ 
+Econometrics,
+ 
+Security
+ 
+Analysis
+ 
+and
+ 
+Portfolio
+ 
+Management,
+ 
+Fixed
+ 
+Income
+ 
+Securities,
+ 
+Advanced
+ 
+Corporate
+ 
+Finance
+ 
+  RELEVANT  EXPERIENCE  NVIDIA  |  Graduate  Student  Consultant ,  Cal  Poly  SLO                     April  2026  -  Present  ●  Built  a  multi-stage  funnel  analysis  to  measure  progression  from  initial  engagement  to  adoption,  quantify  
+conversion
+ 
+rates,
+ 
+and
+ 
+identify
+ 
+the
+ 
+largest
+ 
+drop-off
+ 
+points
+ 
+across
+ 
+the
+ 
+user
+ 
+journey.
+ ●  Presented  final  recommendations  to  NVIDIA  representatives,  translating  technical  analysis  into  clear  business  
+insights
+ 
+for
+ 
+improving
+ 
+developer
+ 
+engagement.
+ Oracle  |  Graduate  Student  Consultant ,  Cal  Poly  SLO                  January  2026  -  March  2026  ●  Built  churn-risk  models  and  an  early-warning  prioritization  workflow  using  Python  and  machine  learning  
+classification
+ 
+on
+ 
+enterprise
+ 
+customer
+ 
+data
+ ●  Flagged  5  churn-risk  customers  ($1.00M)  and  519  new  customers  at  risk  ($35.17M)  ●  Identified  top  churn  signals:  max  users/subscription,  recent  trend  change,  and  avg  activity/subscription  Student  Assistant  |  Strategic  Business  Services,  Cal  Poly  SLO                       September  2024  -  June  2025  ●  Led  credit  card  discrepancy  analysis  using  advanced  Excel,  ensuring  accurate  and  complete  financial  records  Equity  Research  Analyst  |  Student  Managed  Portfolio,  Cal  Poly  SLO               September  2024  -  May  2025  ●  Actively  managed  a  $800,000  portfolio  for  the  Cal  Poly  Endowment  Fund,  aiming  to  outperform  the  VIG  
+benchmark
+ 
+by
+ 
+1%
+ 
+per
+ 
+year
+ ●  Traded  in  exclusively  dividend-paying  securities  and  covered  options  to  enhance  the  fund’s  value  ●  Incorporated  Monte  Carlo  Simulations  and  sensitivity  analysis  for  studying  recommended  securities  Harley-Davidson  Valuation  |  Advanced  Corporate  Finance  Project,  Cal  Poly  SLO   January  2025  -  March  2025   ●  Conducted  a  comprehensive  valuation  of  Harley-Davidson  utilizing  current  financial  statements  and  market  
+data
+ ●  Built  financial  models  to  project  earnings  and  estimate  intrinsic  value,  incorporating  discounted  cash  flow  
+(DCF)
+ 
+and
+ 
+comparable
+ 
+company
+ 
+analysis
+ Premier  Construction,  Inc.  |  Office  Manager  -  Agoura  Hills,  CA   July  2021  -  June  2023   ●  Managed  office  operations,  monitored  and  reconciled  budgets,  and  prioritized  competing  tasks  in  a  fast-paced  
+environment
+  LEADERSHIP  &  INVOLVEMENT
+ Data  Visualization  Project  Lead  |  Cal  Poly  SLO                January  2025  -  March  2025  ●  Led  a  group  analysis  arguing  AI  should  replace  human  drivers  by  2040,  coordinating  team  logistics,  deadlines,  
+and
+ 
+a
+ 
+Tableau-based
+ 
+presentation
+ 
+to
+ 
+persuade
+ 
+a
+ 
+live
+ 
+audience
+ ●  Synthesized  CDC,  NHTSA,  and  IIHS  traffic  fatality  datasets  in  Tableau  to  quantify  the  safety  case  for  
+autonomous
+ 
+vehicle
+ 
+adoption
+ 
+ TECHNICAL  SKILLS   Skills:  Financial  Modeling,  Machine  Learning  (Classification,  Regression,  EDA,  Cross  Validation,  Metrics),  Microsoft  
+Excel,
+ 
+QuickBooks,
+ 
+FactSet,
+ 
+Monte
+ 
+Carlo
+ 
+Simulations,
+ 
+Financial
+ 
+Analytics,
+ 
+Data
+ 
+Visualization,
+ 
+Python,
+ 
+R,
+ 
+Tableau

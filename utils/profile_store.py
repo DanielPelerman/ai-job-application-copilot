@@ -3,22 +3,30 @@ from pathlib import Path
 
 PROFILE_FILE = Path("data/profile.json")
 
-# This is a fallback default; the actual defaults are in data/profile.json
 FALLBACK_DEFAULT = {
     "contact_info": {
         "full_name": "[Your Name]",
         "email": "[your.email@example.com]",
         "phone": "[Your Phone Number]",
         "linkedin": "",
-        "portfolio": "",
-        "github": "",
+    },
+    "links_portfolio": {
+        "github_url": "",
+        "multi_asset_portfolio_url": "",
     },
     "education": {
-        "degree": "",
-        "field_of_study": "",
-        "university": "",
-        "graduation_year": "",
-        "certifications": "",
+        "bachelors": {
+            "degree": "",
+            "field_of_study": "",
+            "university": "",
+            "graduation_year": "",
+        },
+        "masters": {
+            "degree": "",
+            "field_of_study": "",
+            "university": "",
+            "graduation_year": "",
+        },
     },
     "target_roles": "",
     "target_locations": "",
@@ -41,11 +49,19 @@ FALLBACK_DEFAULT = {
 }
 
 
+def _merge_profile_defaults(profile: dict, default: dict) -> dict:
+    for key, value in default.items():
+        if key not in profile:
+            profile[key] = json.loads(json.dumps(value))
+        elif isinstance(value, dict) and isinstance(profile.get(key), dict):
+            profile[key] = _merge_profile_defaults(profile[key], value)
+    return profile
+
+
 def _ensure_profile_file_exists():
-    """Ensure profile.json exists. If not, load from file or create from fallback."""
+    """Ensure profile.json exists. If not, create a minimal blank profile."""
     if not PROFILE_FILE.exists():
         PROFILE_FILE.parent.mkdir(parents=True, exist_ok=True)
-        # Try to write a minimal default profile so it exists
         try:
             with PROFILE_FILE.open("w", encoding="utf-8") as f:
                 json.dump(FALLBACK_DEFAULT, f, indent=2, ensure_ascii=False)
@@ -56,20 +72,17 @@ def _ensure_profile_file_exists():
 def load_profile() -> dict:
     """Load profile from profile.json. Creates file if it doesn't exist."""
     _ensure_profile_file_exists()
-    
+
     if not PROFILE_FILE.exists():
-        return FALLBACK_DEFAULT.copy()
-    
+        return json.loads(json.dumps(FALLBACK_DEFAULT))
+
     try:
         with PROFILE_FILE.open("r", encoding="utf-8") as f:
             profile = json.load(f)
-            # Merge with fallback defaults to ensure all keys exist
-            for key in FALLBACK_DEFAULT:
-                if key not in profile:
-                    profile[key] = FALLBACK_DEFAULT[key]
+            profile = _merge_profile_defaults(profile, FALLBACK_DEFAULT)
             return profile
     except (json.JSONDecodeError, IOError):
-        return FALLBACK_DEFAULT.copy()
+        return json.loads(json.dumps(FALLBACK_DEFAULT))
 
 
 def save_profile(profile: dict) -> bool:
@@ -103,7 +116,7 @@ def clear_profile() -> dict:
             PROFILE_FILE.unlink()
     except IOError:
         pass
-    return FALLBACK_DEFAULT.copy()
+    return json.loads(json.dumps(FALLBACK_DEFAULT))
 
 
 def calculate_completeness(profile: dict) -> dict:
@@ -112,7 +125,6 @@ def calculate_completeness(profile: dict) -> dict:
     filled_fields = 0
     missing_fields = []
 
-    # Check contact info
     contact_fields = ["full_name", "email", "phone", "linkedin"]
     for field in contact_fields:
         total_fields += 1
@@ -122,17 +134,33 @@ def calculate_completeness(profile: dict) -> dict:
         else:
             missing_fields.append(f"contact_info.{field}")
 
-    # Check education
-    education_fields = ["degree", "field_of_study", "university"]
-    for field in education_fields:
+    links_fields = ["github_url", "multi_asset_portfolio_url"]
+    for field in links_fields:
         total_fields += 1
-        value = profile.get("education", {}).get(field, "")
+        value = profile.get("links_portfolio", {}).get(field, "")
         if value and str(value).strip():
             filled_fields += 1
         else:
-            missing_fields.append(f"education.{field}")
+            missing_fields.append(f"links_portfolio.{field}")
 
-    # Check main profile fields
+    education_fields = [
+        ("bachelors", "degree"),
+        ("bachelors", "field_of_study"),
+        ("bachelors", "university"),
+        ("bachelors", "graduation_year"),
+        ("masters", "degree"),
+        ("masters", "field_of_study"),
+        ("masters", "university"),
+        ("masters", "graduation_year"),
+    ]
+    for section, field in education_fields:
+        total_fields += 1
+        value = profile.get("education", {}).get(section, {}).get(field, "")
+        if value and str(value).strip():
+            filled_fields += 1
+        else:
+            missing_fields.append(f"education.{section}.{field}")
+
     main_fields = [
         "target_roles",
         "target_locations",
@@ -149,7 +177,6 @@ def calculate_completeness(profile: dict) -> dict:
         else:
             missing_fields.append(field)
 
-    # Check reusable answers
     answer_fields = [
         "why_this_company",
         "why_this_role",

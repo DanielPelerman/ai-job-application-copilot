@@ -1,10 +1,17 @@
 # Project Notes
 
 ## Current Goal
-Pivot the Phase 1 AI Job Application Copilot toward URL scraping, job detail extraction, and application tracking.
+Build a comprehensive AI-driven job application copilot that scans job URLs, matches against user profile, and tracks applications.
 
 ## Current Phase
-Phase 1: URL scraping and application tracker integration with resume support.
+Phase 1: Core profile management, job scanning, and profile-to-job matching with source-of-truth architecture.
+
+## Architecture Principles
+- **Single Source of Truth**: `data/profile.json` is the only source for user profile data.
+- **No Fake Data**: Profile system never displays or loads hardcoded fake example data.
+- **Fallback Template**: `FALLBACK_DEFAULT` in `profile_store.py` contains only generic placeholders (e.g., "[Your Name]"), never specific professional examples.
+- **Auto-Loading**: Profile automatically loads from `data/profile.json` on every app start.
+- **Transparent**: Debug line on Master Profile page shows profile source.
 
 ## Completed Setup
 - Updated `app.py` to use `Scan Job URL` as the main workflow and remove sidebar profile fields.
@@ -14,18 +21,36 @@ Phase 1: URL scraping and application tracker integration with resume support.
 - Updated `app.py` to surface extraction source, extraction quality, extracted word count, and confidently extracted fields.
 - Integrated Playwright browser-rendered scanning fallback for dynamic job sites in `parsers/job_url_parser.py`.
 - Continued to save scraped job details into `data/applications_tracker.csv`.
-- **Added Master Profile system** with `utils/profile_store.py` and new "Master Profile" tab in `app.py`.
-  - Master Profile is **pre-populated with comprehensive defaults** in `data/profile.json` covering:
-    - Contact info (with placeholders for private fields)
-    - Education (degree, university, certifications)
-    - Career preferences (target roles, locations, work authorization, salary)
-    - Skills & expertise (technical, finance/analytics, tools/platforms)
-    - Work experience, projects, and resume bullets
-    - Reusable application answers (why company, why role, achievements, challenges, leadership)
-  - Profile auto-loads on app startup from `data/profile.json`.
-  - Profile persists edits to `data/profile.json` when "Save Profile" is clicked.
-  - Buttons: **Save Profile**, **Load Profile**, **Restore Default** (reload template), **Clear Profile**.
-  - Profile completeness checklist shows filled/missing fields percentage.
+- **Added Profile Match Engine** with `agents/profile_matcher.py` that compares scanned jobs against saved master profile.
+  - Matches job requirements against: technical_skills, finance_analytics_skills, tools_platforms, projects, resume_bullets, target_roles.
+  - Generates: matching/missing skills, relevant projects, resume bullets, leadership relevance, overall match score (0-100).
+  - **Profile Match Analysis section** added to app after job scanning with:
+    - Match score with color-coded feedback (excellent/good/moderate/limited)
+    - Matching skills, missing skills, strongest fit areas
+    - Role relevance, relevant projects to highlight, key resume bullets
+    - Application recommendations and likely recruiter keywords
+  - Match results saved to application tracker CSV (match_score, matching_skills, missing_skills, relevant_projects, strongest_fits).
+- **Fixed Master Profile Source-of-Truth Issue**:
+  - Clarified that `data/profile.json` is the only source of truth for user profile.
+  - Removed misleading message claiming "pre-populated with placeholder values".
+  - Added debug line showing profile is loaded from `data/profile.json`.
+  - Verified `FALLBACK_DEFAULT` contains only generic placeholders, never fake professional content.
+  - Updated placeholder examples in UI (e.g., "Excel, SQL, Tableau" instead of "Salesforce, SAP, Jira").
+  - Profile auto-loads on every app start from persistent storage.
+- **Revised Master Profile schema**:
+  - Contact information now includes only full name, email, phone, and LinkedIn URL.
+  - Added a new Links / Portfolio section for GitHub URL and Multi-Asset Portfolio Analytics Website URL.
+  - Updated education to support both bachelor’s and master’s degrees, removing the certifications field.
+  - Career preferences now use US Citizen authorization and target locations only include Los Angeles and Newport Beach.
+  - Profile loading and saving updated to support the new nested profile structure.
+- **Added Resume Tailoring Engine**:
+  - Generates a tailored resume based on uploaded resume text, scanned job description, and saved master profile.
+  - Builds a summary of matched keywords, emphasized projects, recommended edits, and missing qualifications.
+  - Saves tailored resume exports to `exports/tailored_resumes/` with `company_role_date_tailored_resume` naming.
+- Provides export buttons for DOCX and optional PDF via `docx2pdf`.
+- Preserves the original resume DOCX layout and formatting while emphasizing existing matched keywords.
+- Keeps analysis and tailoring notes in the app UI only, not inside the resume file.
+
 
 ## Next Steps
 - Enhance job site scraping coverage for larger enterprise and ATS-driven pages.
