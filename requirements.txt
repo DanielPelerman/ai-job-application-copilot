@@ -1,0 +1,9 @@
+streamlit>=1.30
+requests>=2.0
+beautifulsoup4>=4.0
+playwright>=1.40
+pypdf>=3.0
+python-docx>=0.8.11
+pandas>=2.0
+python-dotenv>=1.0
+sqlalchemy>=2.0
